@@ -1,0 +1,48 @@
+#!/bin/bash
+
+swapSinks=("alsa_output.pci-.*.hdmi-stereo" "alsa_output.usb-Creative_Technology_Ltd_Sound_BlasterX_G5_.*.*-stereo" "alsa_output.usb-Schiit_Audio_Modi_Multibit-.*.iec958-stereo")
+#activeSink="$(pactl list short sinks | grep "RUNNING" | awk '{print $2}')"
+activeSink="$(pacmd list-sinks | grep "\* index:" -A1 | grep "name:" | sed 's/.*<\(.*\)>.*/\1/')"
+activeSinkName="$(pacmd list-sinks | grep "\* index:" -A60 | grep 'device.product.name = ' | sed 's/.*"\(.*\)".*/\1/')"
+
+echo "Active sink: ${activeSink} (${activeSinkName})"
+
+sinkIndex=-1
+for (( i=0; i<${#swapSinks[@]}; i++ )); do
+    sink="${swapSinks[${i}]}"
+    echo "Looking at sink: ${sink}"
+
+    if [[ "${activeSink}" =~ ${sink} ]]; then
+        echo "Found sink: ${sink}"
+        sinkIndex=${i}
+        break
+    fi
+done
+
+if [[ ${sinkIndex} -eq -1 || ${sinkIndex} -eq $(( ${#swapSinks[@]} - 1 )) ]]; then
+    newSinkIndex=0
+else
+    newSinkIndex=$(( ${sinkIndex} + 1 ))
+fi
+
+echo "Swapping to sink: ${swapSinks[${newSinkIndex}]}"
+
+trueSinkIndex=$(pactl list short sinks | grep ${swapSinks[${newSinkIndex}]} | awk '{print $1}')
+pacmd set-default-sink ${trueSinkIndex}
+newlyActiveSink="$(pacmd list-sinks | grep "index:\s\+${trueSinkIndex}" -A1 | grep "name:" | sed 's/.*<\(.*\)>.*/\1/')"
+newlyActiveSinkName="$(pacmd list-sinks | grep "index:\s\+${trueSinkIndex}" -A60 | grep 'device.product.name = ' | sed 's/.*"\(.*\)".*/\1/')"
+
+echo "New sink: ${newlyActiveSink}"
+
+IFS='
+'
+for l in $(pactl list short sink-inputs); do
+    index=$(echo "${l}" | awk '{print $1}')
+    sink=$(echo "${l}" | awk '{print $2}')
+
+    if [[ ${sink} -ne ${trueSinkIndex} ]]; then
+        pacmd move-sink-input ${index} ${trueSinkIndex}
+    fi
+done
+
+notify-send "Audio Swap" "Swapped sink from ${activeSinkName} to ${newlyActiveSinkName}"
