@@ -15,7 +15,20 @@ note()
 vnote()
 {
     if [[ -n "${1}" ]]; then
-        pandoc -f gfm ${HOME}/notes/${1}.md | w3m -T text/html
+        if [[ -f "${HOME}/notes/${1}.html" ]]; then
+            xdg-open "${HOME}/notes/${1}.html"
+        else
+            pandoc -f gfm ${HOME}/notes/${1}.md | w3m -T text/html
+        fi
+    else
+        echo "No note specified."
+    fi
+}
+
+cnote()
+{
+    if [[ -n "${1}" ]]; then
+        pandoc --toc --standalone -f gfm -o ${HOME}/notes/${1}.html ${HOME}/notes/${1}.md
     else
         echo "No note specified."
     fi
@@ -47,3 +60,4 @@ __notes_completions()
 
 complete -F __notes_completions note
 complete -F __notes_completions vnote
+complete -F __notes_completions cnote
