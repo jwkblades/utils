@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # swapSinks=("alsa_output.pci-.*.hdmi-stereo" "alsa_output.usb-Creative_Technology_Ltd_Sound_BlasterX_G5_.*.*-stereo" "alsa_output.usb-Schiit_Audio_Modi_Multibit-.*.iec958-stereo" "alsa_output.pci-0000_0c_00.3.iec958-stereo")
-swapSinks=("alsa_output.pci-.*.hdmi-stereo" "alsa_output.usb-Creative_Technology_Ltd_Sound_BlasterX_G5_.*.*-stereo" "alsa_output.pci-0000_0c_00.3.iec958-stereo" "alsa_output.usb-Burr-Brown_from_TI_USB_Audio_CODEC-00.iec958-stereo")
-sinkNames=("HDMI"                           "SoundBlaster G5"                                                       "Modi"                                       "Behringer UM2")
+swapSinks=("alsa_output.pci-.*.hdmi-stereo" "alsa_output.pci-0000_0c_00.3.iec958-stereo" "alsa_output.usb-Burr-Brown_from_TI_USB_Audio_CODEC-00.iec958-stereo")
+sinkNames=("HDMI"                           "Modi"                                       "Behringer UM2")
 activeSink="$(pacmd list-sinks | grep "\* index:" -A1 | grep "name:" | sed 's/.*<\(.*\)>.*/\1/')"
 activeSinkName="$(pacmd list-sinks | grep "\* index:" -A60 | grep 'device.product.name = ' | sed 's/.*"\(.*\)".*/\1/')"
 
