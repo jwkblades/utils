@@ -44,8 +44,11 @@ cnote()
 __notes_list()
 {
     local hd="$(echo ${HOME} | sed 's|\/|\\/|g')"
-    find ${HOME}/notes/ -name "*.md" -a -type f | tr '\n' ' ' | sed 's/\s*$//' | sed 's/\.md\(\s*\)/\1/g' | sed "s/${hd}\/notes\///g"
-    find . -name "*.md" -a -type f | tr '\n' ' ' | sed 's/\s*$//'
+    if [[ "${1}" =~ ^\.\/ ]]; then
+        find . -name "*.md" -a -type f | tr '\n' ' ' | sed 's/\s*$//'
+    else
+        find ${HOME}/notes/ -name "*.md" -a -type f | tr '\n' ' ' | sed 's/\s*$//' | sed 's/\.md\(\s*\)/\1/g' | sed "s/${hd}\/notes\///g"
+    fi
 }
 
 __notes_completions()
@@ -53,7 +56,7 @@ __notes_completions()
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
     if [[ -n ${cur} ]]; then
-        local possible="$(__notes_list)"
+        local possible="$(__notes_list "${cur}")"
         local likely=""
         for item in ${possible}; do
             if [[ ${item} =~ ^${cur} ]]; then
@@ -65,6 +68,7 @@ __notes_completions()
     fi
     COMPREPLY=( $(compgen -W "$(__notes_list)") )
 }
+
 
 complete -F __notes_completions note
 complete -F __notes_completions vnote
