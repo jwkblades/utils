@@ -8,14 +8,21 @@ note()
         filename="$(date +"%Y%m%d-%H%M%S")"
         path="$(dirname "${notebook}${filename}")"
     fi
-    mkdir -p ${HOME}/notes/${path}
-    ${EDITOR} ${HOME}/notes/${path}/${filename}.md
+
+    if [[ "${1}" =~ ^\.\/.*?\.md$ ]]; then
+        ${EDITOR} "${1}"
+    else
+        mkdir -p ${HOME}/notes/${path}
+        ${EDITOR} ${HOME}/notes/${path}/${filename}.md
+    fi
 }
 
 vnote()
 {
     if [[ -n "${1}" ]]; then
-        if [[ -f "${HOME}/notes/${1}.html" ]]; then
+        if [[ "${1}" =~ ^\.\/.*?\.md$ ]]; then
+            pandoc -f gfm "${1}" | w3m -T text/html
+        elif [[ -f "${HOME}/notes/${1}.html" ]]; then
             xdg-open "${HOME}/notes/${1}.html"
         else
             pandoc -f gfm ${HOME}/notes/${1}.md | w3m -T text/html
@@ -38,6 +45,7 @@ __notes_list()
 {
     local hd="$(echo ${HOME} | sed 's|\/|\\/|g')"
     find ${HOME}/notes/ -name "*.md" -a -type f | tr '\n' ' ' | sed 's/\s*$//' | sed 's/\.md\(\s*\)/\1/g' | sed "s/${hd}\/notes\///g"
+    find . -name "*.md" -a -type f | tr '\n' ' ' | sed 's/\s*$//'
 }
 
 __notes_completions()
