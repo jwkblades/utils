@@ -1,0 +1,23 @@
+#!/bin/bash
+
+application="${1}"
+version="${2}"
+
+if [[ -h "${application}" ]]; then
+    unlink "${application}"
+fi
+
+if [[ -f "${application}" ]]; then
+    echo "${application} is an executable and not a symbolic link. Refusing to overwrite." >&2
+    exit 1
+fi
+
+appimage=".appcache/${application}/${application}-${version}-$(arch).appimage"
+if [[ -x "${appimage}" ]]; then
+    echo "Selecting ${appimage} for ${application}"
+
+    ln -sT "${appimage}" "${application}"
+else
+    echo "${appimage} is not executable." >&2
+    exit 1
+fi
