@@ -3,8 +3,8 @@
 application="${1}"
 version="${2}"
 
-if [[ -h "${application}" ]]; then
-    unlink "${application}"
+if [[ -h "${HOME}/bin/${application}" ]]; then
+    unlink "${HOME}/bin/${application}"
 fi
 
 if [[ -f "${application}" ]]; then
@@ -12,11 +12,11 @@ if [[ -f "${application}" ]]; then
     exit 1
 fi
 
-appimage=".appcache/${application}/${application}-${version}-$(arch).appimage"
+appimage="${HOME}/bin/.appcache/${application}/${application}-${version}-$(arch).appimage"
 if [[ -x "${appimage}" ]]; then
     echo "Selecting ${appimage} for ${application}"
 
-    ln -sT "${appimage}" "${application}"
+    ln -sT "${appimage}" "${HOME}/bin/${application}"
 else
     echo "${appimage} is not executable." >&2
     exit 1
