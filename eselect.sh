@@ -3,7 +3,7 @@
 eselect()
 {
     local application="${1}"
-    local appimage="${2}"
+    local version="${2}"
 
     if [[ -h "${application}" ]]; then
         unlink "${application}"
@@ -14,9 +14,14 @@ eselect()
         return 1
     fi
 
-    echo "Selecting ${appimage} for ${application}"
+    local appimage=".appcache/${application}/${application}-${version}-$(arch).appimage"
+    if [[ -x "${appimage}" ]]; then
+        echo "Selecting ${appimage} for ${application}"
 
-    ln -sT "${appimage}" "${application}"
+        ln -sT "${appimage}" "${application}"
+    else
+        echo "${appimage} is not executable." >&2
+    fi
 }
 
 __eselect_apps()
@@ -30,13 +35,12 @@ __eselect_apps()
 __eselect_versions()
 {
     local app="${1}"
-    local arch="$(arch)"
     if [[ ! -d ".appcache/${app}" ]]; then
-        echo "No application cache for '${app}' found." >&2
-        return 1
+        return 0
     fi
 
-    ls -l .appcache/${app}/*.appimage | awk '{val = $9; sub(".appcache/'${app}'/'${app}'-", "", val); sub(".'${arch}'.appimage", "", val); print val}'
+    local arch="$(arch)"
+    ls -l .appcache/${app}/*.appimage | awk '{print $9}' | sed -e "s#.appcache/${app}/${app}-\(.*\).${arch}.appimage#\\1#"
 }
 
 __eselect_completions()
@@ -46,22 +50,18 @@ __eselect_completions()
     local cmds="$(find .appcache -maxdepth 1 -a -type d)"
     local likely=""
 
-    if [[ -z "${cur}" ]]; then
-        for item in ${cmds}; do
-            item="$(echo -n "${item}" | cut -d/ -f1-)"
-            echo "Item: ${item}"
-            if [[ "${item}" =~ "^${cur}" ]]; then
-                likely="${likely} ${item}"
+    local likely=""
+    if [[ -n "${prev}" && "${prev}" != "eselect" ]]; then
+        for version in $(__eselect_versions "${prev}"); do
+            if [[ "${version}" =~ ^${cur} ]]; then
+                likely="${likely} ${version}"
             fi
         done
-        return 0
+
     else
-        for app in $(ls .appcache/${prev}/*.appimage); do
-            likely="${likely} $(echo -n "${app}" | cut -d/ -f1-)"
-        done
+        likely="$(__eselect_apps "${cur}")"
     fi
 
-    echo "Likely: ${likely}"
     COMPREPLY=( $(compgen -W "${likely}") )
 }
 

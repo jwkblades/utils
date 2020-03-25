@@ -1,1 +1,3 @@
 .appcache
+*.pyc
+*.*.sw*
