@@ -1,0 +1,43 @@
+#!/bin/bash
+
+cmd="${1:-start}"
+
+case "${cmd}" in
+    start)
+        pacmd load-module module-null-sink sink_name=combined_inputs
+
+        pacmd load-module module-loopback source=alsa_output.pci-0000_0c_00.3.iec958-stereo.monitor sink=combined_inputs
+        loopbackIndexOne="$(pacmd list-sink-inputs | grep -B4 '<combined_inputs>' | grep 'index: ' | awk '{print $2}' | head -1)"
+        pacmd set-sink-input-volume "${loopbackIndexOne}" 0x09a00
+
+        for input in $(pacmd list-sink-inputs | grep Firefox -B15 | grep index: | awk '{print $2}'); do
+            pacmd move-sink-input "${input}" alsa_output.pci-0000_0c_00.3.iec958-stereo
+        done
+
+        pacmd load-module module-loopback source=alsa_input.usb-Burr-Brown_from_TI_USB_Audio_CODEC-00.analog-stereo sink=combined_inputs
+        loopbackIndexTwo=$(pacmd list-sink-inputs | grep -B4 '<combined_inputs>' | grep 'index: ' | grep -v "${loopbackIndexOne}" | awk '{print $2}' | head -1)
+        pacmd set-sink-input-volume "${loopbackIndexTwo}" 0x10000
+
+        pacmd set-default-source combined_inputs.monitor
+        ;;
+    stop)
+        pacmd unload-module module-loopback
+        pacmd unload-module module-null-sink
+
+        pacmd set-default-source alsa_input.usb-Burr-Brown_from_TI_USB_Audio_CODEC-00.analog-stereo
+        ;;
+    *)
+        echo "
+Usage:
+    virtmic [start]
+        Start the virtual microphone device. Add 2 loopback devices to it, one
+        that is set to monitor your default microphone, and another that gets
+        all firefox audio pointed to it. The second loopback will have 60% the
+        volume of the microphone.
+
+    virtmic stop
+        Stop the virtual microphone device. Clean up, and set things back to
+        the standard.
+"
+        ;;
+esac
