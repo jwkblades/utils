@@ -1,0 +1,3 @@
+!#/bin/bash
+
+sudo xboxdrv --pid-file /var/run/xboxdrv.pid --detach --daemon --wid 0 --silent --type xbox360 --mimic-xpad-wireless --next-controller --wid 1 --silent --type xbox360 --mimic-xpad-wireless --next-controller --wid 2 --silent --type xbox360 --mimic-xpad-wireless --next-controller --wid 3 --silent --type xbox360 --mimic-xpad-wireless
