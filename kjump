@@ -23,7 +23,7 @@ if [[ ! -e "${vmlinuz}" || ! -e "${initrd}" ]]; then
     exit 1
 fi
 
-cmd="$(cat /proc/cmdline)"
+cmd="$(cat /proc/cmdline | sed -e "s/vmlinuz-[0-9]\+\.[0-9]\+\.[0-9]\+-[0-9]\+/vmlinuz-${kernel}/")"
 if [[ -f "${1}" ]]; then
     cmd="$(cat "${1}")"
     shift
