@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ls -l /boot/initramfs-*.img | awk '{print $9}' | sort -hr | head -1 | cut -d- -f2- | cut -d. -f-3

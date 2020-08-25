@@ -5,7 +5,7 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
-kernel="${1}"
+kernel="${1:-$(./latestKernel)}"
 shift
 
 if [[ -z "${kernel}" ]]; then
