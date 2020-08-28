@@ -5,8 +5,21 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
-kernel="${1:-$(./latestKernel)}"
-shift
+path="$(dirname $(readlink --canonicalize "${0}"))"
+kernel="$(${path}/latestKernel)"
+
+while [[ -n "${1}" ]]; do
+    case "${1}" in
+        --kernel|-k)
+            kernel="${2:-${kernel}}"
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
 
 if [[ -z "${kernel}" ]]; then
     echo "Must specify new kernel to jump to!"
