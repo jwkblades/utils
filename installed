@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo "[$(dnf list installed | tail -n +2 | sed -e 's/\.\(.*\s\)/ \1/' | awk '{ printf "{\"package\": \"%s\", \"arch\": \"%s\", \"version\": \"%s\"},", $1, $2, $3 }' | sed -e 's/,$//')]" | jq .
