@@ -1,3 +1,32 @@
 #!/bin/bash
 
-echo "[$(dnf list installed | tail -n +2 | sed -e 's/\.\(.*\s\)/ \1/' | awk '{ printf "{\"package\": \"%s\", \"arch\": \"%s\", \"version\": \"%s\"},", $1, $2, $3 }' | sed -e 's/,$//')]" | jq .
+getafterdot()
+{
+    local pkg="${1}"
+
+    echo -n "${pkg}" | sed -e "s/.\+\.//g"
+}
+
+arch=""
+package=""
+version=""
+release=""
+i=0
+echo "["
+for part in $(dnf list installed | tail -n +2); do
+    if [[ ${i} -eq 0 ]]; then
+        i=1
+        arch="$(getafterdot "${part}")"
+        package="$(echo -n ${part} | sed -e "s/\.${arch}\$//")"
+    elif [[ ${i} -eq 1 ]]; then
+        i=2
+        release="$(getafterdot "${part}")"
+        version="$(echo -n ${part} | sed -e "s/\.${release}\$//")"
+    else
+        i=0
+        echo "{\"arch\": \"${arch}\", \"package\": \"${package}\", \"release\": \"${release}\", \"version\": \"${version}\"},"
+    fi
+done
+echo "]"
+
+#echo "[$(dnf list installed | tail -n +2 | sed -e 's/\.\(.*\s\)/ \1/' | awk '{ printf "{\"package\": \"%s\", \"arch\": \"%s\", \"version\": \"%s\"},", $1, $2, $3 }' | sed -e 's/,$//')]" | jq .
