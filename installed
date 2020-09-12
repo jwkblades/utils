@@ -1,33 +1,35 @@
-#!/bin/bash
+#!/bin/env python3
 
-getafterdot()
-{
-    local pkg="${1}"
+import json
+import re
+import subprocess
 
-    echo -n "${pkg}" | sed -e "s/.\+\.//g"
-}
+from typing import Iterable
 
-main()
-{
-    local arch=""
-    local package=""
-    local version=""
-    local release=""
-    local i=0
-    for part in $(dnf list installed | tail -n +2); do
-        if [[ ${i} -eq 0 ]]; then
-            i=1
-            arch="$(getafterdot "${part}")"
-            package="$(echo -n ${part} | sed -e "s/\.${arch}\$//")"
-        elif [[ ${i} -eq 1 ]]; then
-            i=2
-            release="$(getafterdot "${part}")"
-            version="$(echo -n ${part} | sed -e "s/\.${release}\$//")"
-        else
-            i=0
-            echo "{\"arch\": \"${arch}\", \"package\": \"${package}\", \"release\": \"${release}\", \"version\": \"${version}\"}"
-        fi
-    done
-}
+def splitAtLastDot(value: str) -> Iterable[str]:
+    parts: Iterable[str] = value.split(".")
+    return [".".join(parts[0:-1]), parts[-1]]
 
-main | jq -s '.'
+cpl: subprocess.CompletedProcess = subprocess.run(["dnf", "list", "installed"], capture_output=True, encoding="utf-8")
+
+line: str
+pattern = re.compile(r"\s+")
+values: list = []
+for line in cpl.stdout.split("\n")[1:]:
+    if len(line) == 0:
+        continue
+    parts: list = pattern.split(line)
+    package: str
+    arch: str
+    [package, arch] = splitAtLastDot(parts[0])
+    version: str
+    release: str
+    [version, release] = splitAtLastDot(parts[1])
+    values.append({
+        "arch": arch,
+        "package": package,
+        "release": release,
+        "version": version
+    })
+
+print(json.dumps(values))
