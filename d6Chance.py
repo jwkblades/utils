@@ -16,7 +16,7 @@ def chance2(dice, passes, prob = 1/2):
     return pct
 
 
-print("", end="\t")
+print("d \ p", end="\t")
 for i in range(1, 10):
     print(i, end="\t")
 print()
@@ -24,7 +24,7 @@ print()
 for dice in range(1, 20):
     print(dice, end="\t")
     for passes in range(1, min(dice + 1, 10)):
-        print("{}".format(chance2(dice, passes, 2/3)), end="\t") 
+        print("{0:1.3f}".format(chance2(dice, passes, 2/3)), end="\t") 
     for j in range(min(dice + 1, 10), 10):
         print("0", end="\t")
     print()

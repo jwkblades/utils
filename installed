@@ -1,4 +1,10 @@
+#!/bin/bash
+
+echo "[$(dnf repoquery --installed --qf '{"package": "%{name}", "version": "%{version}", "release": "%{release}", "arch": "%{arch}"},')]" | sed -e "s/},]/}]/"
+
+exit 0
 #!/bin/env python3
+
 
 import json
 import re
