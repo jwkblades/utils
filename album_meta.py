@@ -13,9 +13,6 @@ def writeMetadataFile(meta):
     with open("./metadata.new.json", "w") as metadataFile:
         json.dump(meta, metadataFile)
 
-def files():
-    return glob.glob("./*.wav", recursive=False)
-
 def isNumeric(val):
     try:
         int(val)
@@ -44,11 +41,10 @@ def renameFile(file, title, trackNumber):
 
 def main():
     meta = readMetadataFile()
-    fileList = files()
 
     track = 1;
-    for file in fileList:
-        filename = file[2:]
+    keys = list(meta["tracks"].keys());
+    for filename in keys:
         #meta["meta"]["TrackNumber"] = track
         #meta["meta"]["SourceFile"] = filename
         #meta["meta"]["FileName"] = filename
