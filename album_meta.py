@@ -49,7 +49,7 @@ def main():
         #meta["meta"]["SourceFile"] = filename
         #meta["meta"]["FileName"] = filename
         #updateMetadata(file, meta)
-        newName = renameFile(filename, meta["tracks"][filename]["title"], track)
+        newName = renameFile(filename, meta["tracks"][filename]["title"], meta["tracks"][filename]["to"])
 
         meta["tracks"][newName] = meta["tracks"][filename]
         del meta["tracks"][filename]
