@@ -37,6 +37,15 @@ newlyActiveSinkName="$(pactl list short sinks | grep "RUNNING$" | awk '{print $2
 
 echo "New sink: ${newlyActiveSink}"
 
-pactl set-default-sink @DEFAULT_SINK@
+IFS='
+'
+for l in $(pactl list short sink-inputs); do
+    index=$(echo "${l}" | awk '{print $1}')
+    sink=$(echo "${l}" | awk '{print $2}')
+
+    if [[ ${sink} -ne ${trueSinkIndex} ]]; then
+        pactl move-sink-input ${index} ${trueSinkIndex}
+    fi
+done
 
 notify-send -i audio-card "Audio Swap" "Swapped sink from ${sinkNames[${sinkIndex}]} to ${sinkNames[${newSinkIndex}]}"

@@ -1,4 +1,18 @@
 #!/bin/bash
 
-pactl set-default-sink @DEFAULT_SINK@
+activeSink="$(pacmd list-sinks | grep "\* index:" -A1 | grep "name:" | sed 's/.*<\(.*\)>.*/\1/')"
+activeSinkName="$(pacmd list-sinks | grep "\* index:" -A60 | grep 'device.product.name = ' | sed 's/.*"\(.*\)".*/\1/')"
+trueSinkIndex=$(pactl list short sinks | grep "${activeSink}" | awk '{print $1}')
 
+echo "Active sink: #${trueSinkIndex}  ${activeSink} (${activeSinkName})"
+
+IFS='
+'
+for l in $(pactl list short sink-inputs); do
+    index=$(echo "${l}" | awk '{print $1}')
+    sink=$(echo "${l}" | awk '{print $2}')
+
+    if [[ ${sink} -ne ${trueSinkIndex} ]]; then
+        pacmd move-sink-input ${index} ${trueSinkIndex}
+    fi
+done

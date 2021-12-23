@@ -1,0 +1,36 @@
+#!/bin/python3
+
+import glob
+import json
+import os
+import re
+
+def readMetadataFile():
+    with open("./metadata.json", "r") as metadataFile:
+        return json.load(metadataFile)
+
+def writeMetadataFile(meta):
+    with open("./sitemeta.json", "w") as metadataFile:
+        json.dump(meta, metadataFile)
+
+def slugify(s):
+    return re.sub("-+", "-", re.sub("[\"'!@#$%^&*()~_=+ ,;:]", "-", s)).lower()
+
+def main():
+    meta = readMetadataFile()
+    neo = {
+        "title": meta["meta"]["Album"],
+        "coverUri": meta["meta"]["Album"].lower().replace(" ", "_") + ".jpg",
+        "tracks": []
+    }
+
+    keys = list(meta["tracks"].keys());
+    for filename in keys:
+        neo["tracks"].append({
+            "title": meta["tracks"][filename]["title"],
+            "slug": slugify(filename).replace(".wav", "")
+        })
+
+    writeMetadataFile(neo)
+
+main()
