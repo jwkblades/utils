@@ -3,10 +3,10 @@
 # alsa_output.usb-Schiit_Audio_Modi_Multibit-00.iec958-stereo
 # swapSinks=("alsa_output.pci-.*.hdmi-stereo" "alsa_output.usb-Creative_Technology_Ltd_Sound_BlasterX_G5_.*.*-stereo" "alsa_output.usb-Schiit_Audio_Modi_Multibit-.*.iec958-stereo" "alsa_output.pci-0000_0c_00.3.iec958-stereo")
 #swapSinks=("alsa_output.pci-.*.hdmi-stereo" "alsa_output.pci-0000_0c_00.3.iec958-stereo" "alsa_output.usb-Burr-Brown_from_TI_USB_Audio_CODEC-00.iec958-stereo")
-swapSinks=("alsa_output.pci-.*.hdmi-stereo" "alsa_output.usb-Schiit_Audio_Modi_Multibit-00.analog-stereo" "alsa_output.usb-Burr-Brown_from_TI_USB_Audio_CODEC-00.analog-stereo")
+swapSinks=("alsa_output.pci-.*.hdmi-stereo" "alsa_output.usb-Schiit_Audio_Modi_Multibit-.*.analog-stereo" "alsa_output.usb-Burr-Brown_from_TI_USB_Audio_CODEC-.*.analog-stereo")
 sinkNames=("HDMI"                           "Modi"                                                        "Behringer UM2")
-activeSink="$(pactl list short sinks | grep "RUNNING$" | awk '{print $1}')"
-activeSinkName="$(pactl list short sinks | grep "RUNNING$" | awk '{print $2}')"
+activeSinkName="$(pactl info | grep "Default Sink" | cut -d' ' -f3)"
+activeSink="$(pactl list short sinks | grep "${newlyActiveSink}$" | awk '{print $1}')"
 
 echo "Active sink: ${activeSink} (${activeSinkName})"
 
@@ -31,17 +31,21 @@ fi
 echo "Swapping to sink: ${swapSinks[${newSinkIndex}]}"
 
 trueSinkIndex=$(pactl list short sinks | grep "${swapSinks[${newSinkIndex}]}" | awk '{print $1}')
-pactl set-default-sink ${trueSinkIndex}
-newlyActiveSink="$(pactl list short sinks | grep "RUNNING$" | awk '{print $1}')"
-newlyActiveSinkName="$(pactl list short sinks | grep "RUNNING$" | awk '{print $2}')"
+pactl list short sinks | grep "${swapSinks[${newSinkIndex}]}"
+echo "${swapSinks[${newSinkIndex}]}"
+echo ""
 
-echo "New sink: ${newlyActiveSink}"
+pactl set-default-sink ${trueSinkIndex}
+newlyActiveSink="$(pactl info | grep "Default Sink" | cut -d' ' -f3)"
+
+echo "New sink: (${trueSinkIndex}) ${newlyActiveSink}"
 
 IFS='
 '
 for l in $(pactl list short sink-inputs); do
     index=$(echo "${l}" | awk '{print $1}')
     sink=$(echo "${l}" | awk '{print $2}')
+    echo "Looking at line '${l}', and moving ${index} to ${trueSinkIndex} (from ${sink})"
 
     if [[ ${sink} -ne ${trueSinkIndex} ]]; then
         pactl move-sink-input ${index} ${trueSinkIndex}
