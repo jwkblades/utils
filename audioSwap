@@ -5,6 +5,8 @@
 #swapSinks=("alsa_output.pci-.*.hdmi-stereo" "alsa_output.pci-0000_0c_00.3.iec958-stereo" "alsa_output.usb-Burr-Brown_from_TI_USB_Audio_CODEC-00.iec958-stereo")
 swapSinks=("alsa_output.pci-.*.hdmi-stereo" "alsa_output.usb-Schiit_Audio_Modi_Multibit-.*.analog-stereo" "alsa_output.usb-Burr-Brown_from_TI_USB_Audio_CODEC-.*.analog-stereo")
 sinkNames=("HDMI"                           "Modi"                                                        "Behringer UM2")
+swapSinks=("alsa_output.pci-.*.hdmi-stereo" "alsa_output.usb-Schiit_Audio_Modi_Multibit-.*.analog-stereo" "alsa_output.usb-Schiit_Audio_Schiit_Yggdrasil_Unison_USB-.*.analog-stereo")
+sinkNames=("HDMI"                           "Modi"                                                        "Yggdrasil")
 activeSinkName="$(pactl info | grep "Default Sink" | cut -d' ' -f3)"
 activeSink="$(pactl list short sinks | grep "${newlyActiveSink}$" | awk '{print $1}')"
 
