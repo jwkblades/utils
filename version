@@ -8,22 +8,32 @@ REV_COUNT=${#REVISIONS[@]}
 FIX_COUNT=0
 BREAKING=0
 
+if [[ "$(git rev-parse --abbref-ref HEAD)" != "main" ]]; then
+    echo "$(git describe --tags --always)"
+    exit 0
+fi
+
+log() {
+    echo "${@}" >&2
+}
+
 tag() {
     local NEW_VERSION="${1}"
     if [[ $(git rev-parse --verify -q --end-of-options "${NEW_VERSION}") ]]; then
-        echo "Version ${NEW_VERSION} already exists! Manual tagging may be required"
+        log "Version ${NEW_VERSION} already exists! Manual tagging may be required"
         exit 1
     fi
 
-    git tag -m "Auto-tagging ${NEW_VERSION}" "${NEW_VERSION}"
+    git tag -m "Auto-tagging ${NEW_VERSION}" "${NEW_VERSION}" &>&2
+    echo "${NEW_VERSION}"
     exit 0
 }
 
 if ! git rev-parse --verify -q --end-of-options "${TAG}^{tag}" &>/dev/null; then
-    echo "No tag found, attempting to auto-tag v0.0.0"
+    log "No tag found, attempting to auto-tag v0.0.0"
     tag "v0.0.0"
 elif [[ "${REV_COUNT}" -eq 0 ]]; then
-    echo "Currently sitting on latest version. No need to bump."
+    log "Currently sitting on latest version. No need to bump."
     exit 0
 fi
 
@@ -38,16 +48,19 @@ for REVISION in ${REVISIONS[@]}; do
 done
 
 if [[ "${FIX_COUNT}" -eq "${REV_COUNT}" ]]; then
-    echo "Micro version bump"
+    log "Micro version bump"
     (( VERSION_PARTS[2]++ ))
 elif [[ "${BREAKING}" -ge 1 ]]; then
-    echo "Breaking change found, major version bump"
+    log "Breaking change found, major version bump"
     (( VERSION_PARTS[0]++ ))
+    VERSION_PARTS[1]=0
+    VERSION_PARTS[2]=0
 else
-    echo "Minor version bump"
+    log "Minor version bump"
     (( VERSION_PARTS[1]++ ))
+    VERSION_PARTS[2]=0
 fi
 
 IFS=. NEW_VERSION="v${VERSION_PARTS[*]}"
-echo "${VERSION} -> ${NEW_VERSION}"
+log "${VERSION} -> ${NEW_VERSION}"
 tag "${NEW_VERSION}"
