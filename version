@@ -8,7 +8,7 @@ REV_COUNT=${#REVISIONS[@]}
 FIX_COUNT=0
 BREAKING=0
 
-if [[ "$(git rev-parse --abbref-ref HEAD)" != "main" ]]; then
+if [[ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]]; then
     echo "$(git describe --tags --always)"
     exit 0
 fi
@@ -24,7 +24,7 @@ tag() {
         exit 1
     fi
 
-    git tag -m "Auto-tagging ${NEW_VERSION}" "${NEW_VERSION}" &>&2
+    git tag -m "Auto-tagging ${NEW_VERSION}" "${NEW_VERSION}" 1>&2
     echo "${NEW_VERSION}"
     exit 0
 }
