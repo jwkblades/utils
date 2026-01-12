@@ -7,8 +7,13 @@ REVISIONS=( $(git rev-list --end-of-options "${TAG}..HEAD") )
 REV_COUNT=${#REVISIONS[@]}
 FIX_COUNT=0
 BREAKING=0
+DRY_RUN=0
 
-if [[ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]]; then
+if [[ "${1}" == "--dry-run" ]]; then
+    DRY_RUN=1
+fi
+
+if [[ "$(git rev-parse --abbrev-ref HEAD)" != "main" && ${DRY_RUN} -eq 0 ]]; then
     echo "$(git describe --tags --always)"
     exit 0
 fi
@@ -24,7 +29,11 @@ tag() {
         exit 1
     fi
 
-    git tag -m "Auto-tagging ${NEW_VERSION}" "${NEW_VERSION}" 1>&2
+    if [[ ${DRY_RUN} -eq 0 ]]; then
+        log "Tagging version"
+        git tag -m "Auto-tagging ${NEW_VERSION}" "${NEW_VERSION}" 1>&2
+    fi
+
     echo "${NEW_VERSION}"
     exit 0
 }
