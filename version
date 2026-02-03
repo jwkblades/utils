@@ -51,7 +51,7 @@ for REVISION in ${REVISIONS[@]}; do
 
     if [[ "${TITLE,,}" =~ (breaking) ]]; then
         BREAKING=1
-    elif [[ "${TITLE,,}" =~ (fix) ]]; then
+    elif [[ "${TITLE,,}" =~ (fix|minor|merge) ]]; then
         (( FIX_COUNT++ ))
     fi
 done
