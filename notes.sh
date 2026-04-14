@@ -1,19 +1,20 @@
 #!/bin/bash
 note()
 {
-    local notebook="${1//:/\/}"
-    local filename="$(basename "${notebook}")"
+    local notebook="${@//:/\/}"
+    local filename="$(basename "${notebook}" ".md")"
     local path="$(dirname "${notebook}${filename}")"
+    echo "Working on '${@}', base='${path}', file='${filename}'" >&2
     if [[ ${notebook} =~ \/$ || -z "${notebook}" ]]; then
         filename="$(date +"%Y%m%d-%H%M%S")"
         path="$(dirname "${notebook}${filename}")"
     fi
 
-    if [[ "${1}" =~ ^\.\/.*?\.md$ ]]; then
-        ${EDITOR} "${1}"
+    if [[ "${@}" =~ ^\.\/.*?\.md$ ]]; then
+        ${EDITOR} "${@}"
     else
-        mkdir -p ${HOME}/notes/${path}
-        ${EDITOR} ${HOME}/notes/${path}/${filename}.md
+        mkdir -p "${HOME}/notes/${path}"
+        ${EDITOR} "${HOME}/notes/${path}/${filename}.md"
     fi
 }
 
@@ -45,9 +46,9 @@ __notes_list()
 {
     local hd="$(echo ${HOME} | sed 's|\/|\\/|g')"
     if [[ "${1}" =~ ^\.\/ ]]; then
-        find . -name "*.md" -a -type f | tr '\n' ' ' | sed 's/\s*$//'
+        find . -name "*.md" -type f
     else
-        find ${HOME}/notes/ -name "*.md" -a -type f | tr '\n' ' ' | sed 's/\s*$//' | sed 's/\.md\(\s*\)/\1/g' | sed "s/${hd}\/notes\///g"
+        find ${HOME}/notes/ -name "*.md" -type f | sed "s/${hd}\/notes\///g"
     fi
 }
 
@@ -55,20 +56,19 @@ __notes_completions()
 {
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if [[ -n ${cur} ]]; then
-        local possible="$(__notes_list "${cur}")"
-        local likely=""
-        for item in ${possible}; do
-            if [[ ${item} =~ ^${cur} ]]; then
-                likely="${likely} ${item}"
-            fi
-        done
-        COMPREPLY=( $(compgen -W "${likely}") )
-        return 0
+    local IFS=$'\n'
+    if [[ -n "${cur}" ]]; then
+        mapfile -t COMPREPLY < <(
+            __notes_list "${cur}" | while IFS= read -r item; do
+                if [[ "${item}" == "${cur}"* ]]; then
+                    echo "${item@E}"
+                fi
+            done
+        )
+    else
+        mapfile -t COMPREPLY < <(__notes_list)
     fi
-    COMPREPLY=( $(compgen -W "$(__notes_list)") )
 }
-
 
 complete -F __notes_completions note
 complete -F __notes_completions vnote
