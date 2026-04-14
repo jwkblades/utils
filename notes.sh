@@ -61,7 +61,7 @@ __notes_completions()
         mapfile -t COMPREPLY < <(
             __notes_list "${cur}" | while IFS= read -r item; do
                 if [[ "${item}" == "${cur}"* ]]; then
-                    echo "${item@E}"
+                    echo "${item//\.md/}"
                 fi
             done
         )
