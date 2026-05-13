@@ -5,10 +5,11 @@ curl http://localhost:28080/v1/chat/completions \
   -d "$(jq -n --rawfile doc "${1}" '{
     "model": "Qwen3.6-27B-UD-Q4_K_XL",
     "messages": [
-      {"role": "system", "content": "You are an expert summarizer. Be extremely concise. Format output as markdown, including headings for breaking changes, new features, and fixes. Do not include headings which have no items. Include ticket numbers by each item, if applicable."},
+      {"role": "system", "content": "You are an expert summarizer. Be extremely concise. Format output as markdown, including headings for breaking changes, new features, and fixes. Do not include headings which have no items. Include ticket numbers, bolded, by each item if applicable."},
           {"role": "user", "content": "Please provide a clear, concise, structured summary of this document:\n\n\($doc)"}
     ],
-    "temperature": 0.2,
+    "temperature": 0.9,
+    "stream": false,
     "max_tokens": 20480
   }')" | \
   jq -r .choices[0].message.content
